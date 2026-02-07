@@ -1,0 +1,67 @@
+alerts:
+- criteria:
+    job_types:
+    - full_time
+    keywords: SRE
+    location: France
+    max_results: 100
+    time_filter: past_week
+    work_models:
+    - remote
+  enabled: true
+  name: SRE-france-remote
+- criteria:
+    job_types:
+    - full_time
+    keywords: Ingénieur infrastructure
+    location: France
+    max_results: 100
+    time_filter: past_week
+    work_models:
+    - remote
+  enabled: true
+  name: infra-france-remote
+- criteria:
+    job_types:
+    - full_time
+    keywords: DevOps
+    location: France
+    max_results: 100
+    time_filter: past_week
+    work_models:
+    - remote
+  enabled: true
+  name: devops-france-remote
+- criteria:
+    job_types:
+    - full_time
+    keywords: DevOps
+    location: Europe
+    max_results: 100
+    time_filter: past_week
+    work_models:
+    - remote
+  enabled: true
+  name: devops-europe-remote
+- criteria:
+    job_types:
+    - full_time
+    keywords: SRE
+    location: Europe
+    max_results: 100
+    time_filter: past_week
+    work_models:
+    - remote
+  enabled: true
+  name: SRE-europe-remote
+- criteria:
+    job_types:
+    - full_time
+    keywords: Ingénieur infrastructure
+    location: Europe
+    max_results: 100
+    time_filter: past_week
+    work_models:
+    - remote
+  enabled: true
+  name: infra-europe-remote
