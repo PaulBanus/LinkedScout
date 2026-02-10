@@ -232,3 +232,30 @@ class TestRateLimiter:
 
         limiter.increase_backoff()
         assert limiter._current_delay == 1.5  # 0.5 * 3.0
+
+    def test_rate_limiter_negative_min_delay(self):
+        """Test that negative min_delay is rejected."""
+        with pytest.raises(ValueError, match="min_delay must be >= 0"):
+            RateLimiter(min_delay=-1.0)
+
+    def test_rate_limiter_backoff_multiplier_too_small(self):
+        """Test that backoff_multiplier < 1.0 is rejected."""
+        with pytest.raises(ValueError, match="backoff_multiplier must be >= 1.0"):
+            RateLimiter(backoff_multiplier=0.5)
+
+    def test_rate_limiter_max_delay_less_than_min(self):
+        """Test that max_delay < min_delay is rejected."""
+        with pytest.raises(ValueError, match="max_delay must be >= min_delay"):
+            RateLimiter(min_delay=5.0, max_delay=1.0)
+
+    def test_rate_limiter_negative_reset_after(self):
+        """Test that negative reset_after is rejected."""
+        with pytest.raises(ValueError, match="reset_after must be >= 0"):
+            RateLimiter(reset_after=-1)
+
+    def test_rate_limiter_valid_boundary_values(self):
+        """Test that boundary values (zeros) are accepted."""
+        limiter = RateLimiter(min_delay=0.0, max_delay=0.0, reset_after=0)
+        assert limiter._min_delay == 0.0
+        assert limiter._max_delay == 0.0
+        assert limiter._reset_after == 0

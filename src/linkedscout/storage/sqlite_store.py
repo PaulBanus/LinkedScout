@@ -125,9 +125,7 @@ class SqliteStore:
         return new_count, updated_count
 
     @beartype
-    def get_new_jobs(
-        self, jobs: list[JobPosting]
-    ) -> list[JobPosting]:
+    def get_new_jobs(self, jobs: list[JobPosting]) -> list[JobPosting]:
         """Filter jobs to only return ones not yet in database.
 
         Args:

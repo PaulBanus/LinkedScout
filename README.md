@@ -1,6 +1,6 @@
 # LinkedScout
 
-Gather job listing from Linkeding using multiple search criterias and obtain the list of all the matching job in one place.
+Gather job listings from LinkedIn using multiple search criteria and obtain the list of all matching jobs in one place.
 
 ## Features
 
@@ -102,14 +102,14 @@ uv run linkedscout alerts delete "python-remote"
 
 ## Project Structure
 
-```
+```text
 linkedscout/
 ├── src/linkedscout/      # Main package
 │   ├── models/           # Pydantic data models
 │   ├── scraper/          # LinkedIn scraping logic
 │   ├── services/         # Business logic
 │   ├── storage/          # JSON/SQLite storage
-│   └── cli.py            # CLI interface
+│   └── cli.py            # CLI entry point
 ├── alerts.yaml           # Alert definitions (all alerts in single file)
 ├── tests/                # Test suite
 └── pyproject.toml        # Project configuration

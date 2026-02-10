@@ -162,8 +162,17 @@ class TestAlertService:
         alerts_dir = temp_dir / "nonexistent"
         alerts_file = temp_dir / "alerts.yaml"
 
-        with pytest.raises(FileNotFoundError):
+        with pytest.raises(NotADirectoryError):
             AlertService.migrate_from_directory(alerts_dir, alerts_file)
+
+    def test_migrate_rejects_file_path(self, temp_dir):
+        """Test migration fails if source is a file, not a directory."""
+        file_path = temp_dir / "not_a_dir"
+        file_path.write_text("I am a file")
+        alerts_file = temp_dir / "alerts.yaml"
+
+        with pytest.raises(NotADirectoryError, match="not a directory"):
+            AlertService.migrate_from_directory(file_path, alerts_file)
 
     def test_migrate_to_existing_file(self, temp_dir):
         """Test migration fails if target file already exists."""
@@ -274,6 +283,47 @@ class TestJobService:
         jobs = await service.run_alert(alert)
 
         assert jobs == []
+
+    @pytest.mark.asyncio
+    @respx.mock
+    async def test_run_alert_only_new_returns_new_jobs(
+        self, test_settings, sample_html: str
+    ):
+        """Test that run_alert with only_new=True returns only new jobs."""
+        service = JobService(test_settings)
+
+        # Pre-populate DB with one known job (id matches sample_html)
+        known_job = JobPosting(
+            id="123456789",
+            title="Known Job",
+            company="Known Corp",
+            location="Paris",
+            url="https://linkedin.com/jobs/view/123456789",
+        )
+        service._sqlite_store.save([known_job])
+        assert service.get_job_count() == 1
+
+        # Mock search returns both known (123456789) and new (987654321)
+        route = respx.get(LinkedInClient.BASE_URL)
+        route.side_effect = [
+            httpx.Response(200, text=sample_html),
+            httpx.Response(200, text="<html><body></body></html>"),
+        ]
+
+        alert = SavedAlert(
+            name="test",
+            criteria=SearchCriteria(keywords="Python", max_results=10),
+            enabled=True,
+        )
+
+        jobs = await service.run_alert(alert, only_new=True, save_to_db=True)
+
+        # Should only return the new job (987654321), not the known one
+        assert len(jobs) == 1
+        assert jobs[0].id == "987654321"
+
+        # Both jobs should now be in DB (original + new)
+        assert service.get_job_count() == 2
 
     def test_get_stored_jobs(self, test_settings):
         """Test retrieving stored jobs."""

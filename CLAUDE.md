@@ -81,7 +81,7 @@
 - `src/linkedscout/services/` - Business logic
 - `src/linkedscout/storage/` - JSON/SQLite storage
 - `src/linkedscout/utils/` - Utilities (rate limiter, etc.)
-- `src/linkedscout/cli.py` - CLI interface
+- `src/linkedscout/cli.py` - CLI entry point
 - `alerts.yaml` - Alert definitions (all alerts in single file)
 - `tests/` - Test suite
 - `.pre-commit-config.yaml` - Pre-commit hooks configuration

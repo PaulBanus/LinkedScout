@@ -67,9 +67,7 @@ class HTMLParser:
 
             # Title
             title_elem = card.css_first(
-                "h3.base-search-card__title, "
-                "h3.job-search-card__title, "
-                "span.sr-only"
+                "h3.base-search-card__title, h3.job-search-card__title, span.sr-only"
             )
             title = title_elem.text(strip=True) if title_elem else "Unknown"
 
@@ -83,8 +81,7 @@ class HTMLParser:
 
             # Location
             location_elem = card.css_first(
-                "span.job-search-card__location, "
-                "span.base-search-card__metadata"
+                "span.job-search-card__location, span.base-search-card__metadata"
             )
             location = location_elem.text(strip=True) if location_elem else "Unknown"
 
@@ -107,8 +104,7 @@ class HTMLParser:
 
             # Salary (if available)
             salary_elem = card.css_first(
-                "span.job-search-card__salary-info, "
-                "span.base-search-card__salary"
+                "span.job-search-card__salary-info, span.base-search-card__salary"
             )
             salary = salary_elem.text(strip=True) if salary_elem else None
 
@@ -132,7 +128,7 @@ class HTMLParser:
                 applicants_count=applicants,
             )
 
-        except Exception:
+        except ValueError, AttributeError, TypeError, KeyError:
             logger.warning("Failed to parse job card", exc_info=True)
             return None
 

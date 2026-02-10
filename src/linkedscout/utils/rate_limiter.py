@@ -25,6 +25,18 @@ class RateLimiter:
             max_delay: Maximum delay cap in seconds.
             reset_after: Reset backoff after this many successful requests.
         """
+        if min_delay < 0:
+            msg = "min_delay must be >= 0"
+            raise ValueError(msg)
+        if backoff_multiplier < 1.0:
+            msg = "backoff_multiplier must be >= 1.0"
+            raise ValueError(msg)
+        if max_delay < min_delay:
+            msg = "max_delay must be >= min_delay"
+            raise ValueError(msg)
+        if reset_after < 0:
+            msg = "reset_after must be >= 0"
+            raise ValueError(msg)
         self._min_delay = min_delay
         self._backoff_multiplier = backoff_multiplier
         self._max_delay = max_delay

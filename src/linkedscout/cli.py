@@ -79,18 +79,14 @@ def _get_settings(
 @beartype
 def search(
     keywords: Annotated[str, typer.Option("--keywords", "-k", help="Search keywords")],
-    location: Annotated[
-        str, typer.Option("--location", "-l", help="Location")
-    ] = "",
+    location: Annotated[str, typer.Option("--location", "-l", help="Location")] = "",
     time: Annotated[
         str, typer.Option("--time", "-t", help="Time filter (24h, 7d, 30d, any)")
     ] = "7d",
     remote: Annotated[
         bool, typer.Option("--remote", "-r", help="Only remote jobs")
     ] = False,
-    hybrid: Annotated[
-        bool, typer.Option("--hybrid", help="Only hybrid jobs")
-    ] = False,
+    hybrid: Annotated[bool, typer.Option("--hybrid", help="Only hybrid jobs")] = False,
     on_site: Annotated[
         bool, typer.Option("--on-site", help="Only on-site jobs")
     ] = False,
@@ -223,18 +219,14 @@ def list_alerts(
 def create_alert(
     name: Annotated[str, typer.Argument(help="Alert name")],
     keywords: Annotated[str, typer.Option("--keywords", "-k", help="Search keywords")],
-    location: Annotated[
-        str, typer.Option("--location", "-l", help="Location")
-    ] = "",
+    location: Annotated[str, typer.Option("--location", "-l", help="Location")] = "",
     time: Annotated[
         str, typer.Option("--time", "-t", help="Time filter (24h, 7d, 30d, any)")
     ] = "7d",
     remote: Annotated[
         bool, typer.Option("--remote", "-r", help="Only remote jobs")
     ] = False,
-    hybrid: Annotated[
-        bool, typer.Option("--hybrid", help="Only hybrid jobs")
-    ] = False,
+    hybrid: Annotated[bool, typer.Option("--hybrid", help="Only hybrid jobs")] = False,
     full_time: Annotated[
         bool, typer.Option("--full-time", help="Full-time only")
     ] = False,
@@ -358,7 +350,9 @@ def run_alerts(
             task = progress.add_task(f"Running alert '{alert.name}'...", total=None)
             jobs = asyncio.run(job_service.run_alert(alert))
             all_jobs.extend(jobs)
-            progress.update(task, description=f"[green]'{alert.name}': {len(jobs)} jobs[/green]")
+            progress.update(
+                task, description=f"[green]'{alert.name}': {len(jobs)} jobs[/green]"
+            )
 
     # Deduplicate by job ID
     seen_ids: set[str] = set()
@@ -441,12 +435,8 @@ def disable_alert(
 @alerts_app.command("migrate")
 @beartype
 def migrate_alerts(
-    from_dir: Annotated[
-        Path, typer.Option("--from", help="Source alerts directory")
-    ],
-    to_file: Annotated[
-        Path, typer.Option("--to", help="Target alerts.yaml file")
-    ],
+    from_dir: Annotated[Path, typer.Option("--from", help="Source alerts directory")],
+    to_file: Annotated[Path, typer.Option("--to", help="Target alerts.yaml file")],
     force: Annotated[
         bool, typer.Option("--force", "-f", help="Overwrite existing file")
     ] = False,
@@ -481,7 +471,9 @@ def migrate_alerts(
             progress.add_task("Migrating alerts...", total=None)
             count = AlertService.migrate_from_directory(from_dir, to_file)
 
-        console.print(f"[green]Successfully migrated {count} alerts to {to_file}[/green]")
+        console.print(
+            f"[green]Successfully migrated {count} alerts to {to_file}[/green]"
+        )
         console.print(f"[dim]You can now delete the old directory: {from_dir}[/dim]")
 
     except Exception as e:

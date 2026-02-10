@@ -130,7 +130,9 @@ class SavedAlert(BaseModel):
                 "keywords": self.criteria.keywords,
                 "location": self.criteria.location,
                 "time_filter": _serialize_enum(self.criteria.time_filter),
-                "work_models": [_serialize_enum(wm) for wm in self.criteria.work_models],
+                "work_models": [
+                    _serialize_enum(wm) for wm in self.criteria.work_models
+                ],
                 "job_types": [_serialize_enum(jt) for jt in self.criteria.job_types],
                 "max_results": self.criteria.max_results,
             },
@@ -142,6 +144,15 @@ class SavedAlert(BaseModel):
     def from_yaml(cls, yaml_content: str) -> Self:
         """Load alert from YAML string."""
         data = yaml.safe_load(yaml_content)
+        if not isinstance(data, dict):
+            msg = "Invalid YAML: expected a mapping"
+            raise ValueError(msg)
+        if "name" not in data or not isinstance(data["name"], str):
+            msg = "Invalid YAML: 'name' must be a string"
+            raise ValueError(msg)
+        if "criteria" not in data or not isinstance(data["criteria"], dict):
+            msg = "Invalid YAML: 'criteria' must be a mapping"
+            raise ValueError(msg)
         criteria_data = data["criteria"]
 
         criteria = SearchCriteria(
@@ -149,9 +160,12 @@ class SavedAlert(BaseModel):
             location=criteria_data.get("location", ""),
             time_filter=_deserialize_time_filter(criteria_data.get("time_filter", "")),
             work_models=[
-                _deserialize_work_model(wm) for wm in criteria_data.get("work_models", [])
+                _deserialize_work_model(wm)
+                for wm in criteria_data.get("work_models", [])
             ],
-            job_types=[_deserialize_job_type(jt) for jt in criteria_data.get("job_types", [])],
+            job_types=[
+                _deserialize_job_type(jt) for jt in criteria_data.get("job_types", [])
+            ],
             max_results=criteria_data.get("max_results", 100),
         )
 
@@ -168,6 +182,12 @@ class SavedAlert(BaseModel):
 
     def save(self, alerts_dir: "Path") -> "Path":
         """Save alert to YAML file."""
+        from pathlib import Path as _Path
+
+        safe_name = _Path(self.name).name
+        if safe_name != self.name or not self.name or self.name in (".", ".."):
+            msg = f"Invalid alert name: '{self.name}' contains path separators"
+            raise ValueError(msg)
         file_path = alerts_dir / f"{self.name}.yaml"
         file_path.write_text(self.to_yaml(), encoding="utf-8")
         return file_path
@@ -194,8 +214,12 @@ class AlertsConfig(BaseModel):
                     "keywords": alert.criteria.keywords,
                     "location": alert.criteria.location,
                     "time_filter": _serialize_enum(alert.criteria.time_filter),
-                    "work_models": [_serialize_enum(wm) for wm in alert.criteria.work_models],
-                    "job_types": [_serialize_enum(jt) for jt in alert.criteria.job_types],
+                    "work_models": [
+                        _serialize_enum(wm) for wm in alert.criteria.work_models
+                    ],
+                    "job_types": [
+                        _serialize_enum(jt) for jt in alert.criteria.job_types
+                    ],
                     "max_results": alert.criteria.max_results,
                 },
             }
@@ -217,11 +241,17 @@ class AlertsConfig(BaseModel):
             criteria = SearchCriteria(
                 keywords=criteria_data["keywords"],
                 location=criteria_data.get("location", ""),
-                time_filter=_deserialize_time_filter(criteria_data.get("time_filter", "")),
+                time_filter=_deserialize_time_filter(
+                    criteria_data.get("time_filter", "")
+                ),
                 work_models=[
-                    _deserialize_work_model(wm) for wm in criteria_data.get("work_models", [])
+                    _deserialize_work_model(wm)
+                    for wm in criteria_data.get("work_models", [])
                 ],
-                job_types=[_deserialize_job_type(jt) for jt in criteria_data.get("job_types", [])],
+                job_types=[
+                    _deserialize_job_type(jt)
+                    for jt in criteria_data.get("job_types", [])
+                ],
                 max_results=criteria_data.get("max_results", 100),
             )
 
@@ -272,9 +302,7 @@ class AlertsConfig(BaseModel):
         updated_alert = alert.model_copy(update=updates)
 
         # Replace old alert with updated one
-        new_alerts = [
-            updated_alert if a.name == name else a for a in self.alerts
-        ]
+        new_alerts = [updated_alert if a.name == name else a for a in self.alerts]
         return self.model_copy(update={"alerts": new_alerts})
 
     def remove_alert(self, name: str) -> Self:

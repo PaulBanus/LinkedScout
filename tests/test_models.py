@@ -4,7 +4,7 @@ from datetime import datetime
 
 import pytest
 
-from linkedscout.models.job import JobPosting
+from linkedscout.models.job import JobPosting, _parse_bool
 from linkedscout.models.search import (
     AlertsConfig,
     JobType,
@@ -559,3 +559,114 @@ class TestEnumSerialization:
 
         result = _deserialize_job_type(string_value)
         assert result == expected_enum
+
+
+class TestParseBool:
+    """Tests for _parse_bool helper."""
+
+    @pytest.mark.parametrize(
+        ("value", "expected"),
+        [
+            (True, True),
+            (False, False),
+            (1, True),
+            (0, False),
+            ("true", True),
+            ("True", True),
+            ("TRUE", True),
+            ("false", False),
+            ("False", False),
+            ("FALSE", False),
+            ("yes", True),
+            ("Yes", True),
+            ("no", False),
+            ("No", False),
+            ("1", True),
+            ("0", False),
+            (None, False),
+            ("", False),
+        ],
+    )
+    def test_parse_bool(self, value, expected):
+        """Test _parse_bool with various inputs."""
+        assert _parse_bool(value) is expected
+
+    def test_parse_bool_unrecognized_string(self):
+        """Test _parse_bool raises ValueError for unrecognized strings."""
+        with pytest.raises(ValueError, match="Cannot convert"):
+            _parse_bool("maybe")
+
+    def test_job_posting_from_dict_with_string_false(self):
+        """Test that JobPosting.from_dict handles string 'false' correctly."""
+        data = {
+            "id": "12345",
+            "title": "Python Developer",
+            "company": "Acme Corp",
+            "location": "Paris",
+            "url": "https://www.linkedin.com/jobs/view/12345",
+            "is_remote": "false",
+        }
+
+        job = JobPosting.from_dict(data)
+        assert job.is_remote is False
+
+
+class TestSavedAlertFromYamlValidation:
+    """Tests for SavedAlert.from_yaml input validation."""
+
+    @pytest.mark.parametrize(
+        "yaml_content",
+        [
+            "",
+            "null",
+            "- item1\n- item2",
+            "name: test\n",  # missing criteria
+            "criteria:\n  keywords: Python\n",  # missing name
+            "name: test\ncriteria: not-a-dict\n",  # criteria not a dict
+            "name: 123\ncriteria:\n  keywords: Python\n",  # name not a string
+        ],
+        ids=[
+            "empty",
+            "null",
+            "list",
+            "missing_criteria",
+            "missing_name",
+            "criteria_not_dict",
+            "name_not_string",
+        ],
+    )
+    def test_saved_alert_from_yaml_invalid_structure(self, yaml_content):
+        """Test that invalid YAML structures raise ValueError."""
+        with pytest.raises(ValueError, match="Invalid YAML"):
+            SavedAlert.from_yaml(yaml_content)
+
+
+class TestSavedAlertSavePathTraversal:
+    """Tests for SavedAlert.save() path traversal prevention."""
+
+    @pytest.mark.parametrize(
+        "name",
+        [
+            "../etc/passwd",
+            "/absolute",
+            "sub/dir",
+            ".",
+            "..",
+        ],
+    )
+    def test_saved_alert_save_rejects_path_traversal(self, name, temp_dir):
+        """Test that save() rejects names with path separators."""
+        criteria = SearchCriteria(keywords="Python")
+        alert = SavedAlert(name=name, criteria=criteria)
+
+        with pytest.raises(ValueError, match="Invalid alert name"):
+            alert.save(temp_dir)
+
+    def test_saved_alert_save_accepts_valid_name(self, temp_dir):
+        """Test that save() works with valid names."""
+        criteria = SearchCriteria(keywords="Python")
+        alert = SavedAlert(name="valid-alert-name", criteria=criteria)
+
+        path = alert.save(temp_dir)
+        assert path.exists()
+        assert path.name == "valid-alert-name.yaml"

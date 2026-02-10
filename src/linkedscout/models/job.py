@@ -6,6 +6,37 @@ from typing import Self
 from beartype import beartype
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 
+_TRUTHY_STRINGS = frozenset({"true", "yes", "1"})
+_FALSY_STRINGS = frozenset({"false", "no", "0", ""})
+
+
+@beartype
+def _parse_bool(value: str | bool | int | None) -> bool:
+    """Parse a value to boolean, handling string representations correctly.
+
+    Args:
+        value: The value to parse.
+
+    Returns:
+        The boolean result.
+
+    Raises:
+        ValueError: If value is a string that cannot be interpreted as boolean.
+    """
+    if value is None:
+        return False
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, int):
+        return bool(value)
+    lower = value.lower()
+    if lower in _TRUTHY_STRINGS:
+        return True
+    if lower in _FALSY_STRINGS:
+        return False
+    msg = f"Cannot convert '{value}' to bool"
+    raise ValueError(msg)
+
 
 class JobPosting(BaseModel):
     """Represents a LinkedIn job posting."""
@@ -71,7 +102,7 @@ class JobPosting(BaseModel):
             if data.get("description_snippet")
             else None,
             salary=str(data["salary"]) if data.get("salary") else None,
-            is_remote=bool(data.get("is_remote", False)),
+            is_remote=_parse_bool(data.get("is_remote", False)),
             applicants_count=str(data["applicants_count"])
             if data.get("applicants_count")
             else None,

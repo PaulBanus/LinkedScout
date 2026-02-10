@@ -99,7 +99,11 @@ class LinkedInClient:
 
         # Sort by posted_at (most recent first)
         all_jobs.sort(
-            key=lambda j: j.posted_at or j.scraped_at,
+            key=lambda j: (
+                (j.posted_at or j.scraped_at).timestamp()
+                if (j.posted_at or j.scraped_at)
+                else 0.0
+            ),
             reverse=True,
         )
 

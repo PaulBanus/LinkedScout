@@ -1,6 +1,5 @@
 """Service for searching and managing jobs."""
 
-
 from typing import TYPE_CHECKING
 
 from beartype import beartype
@@ -72,10 +71,13 @@ class JobService:
         if not alert.enabled:
             return []
 
-        jobs = await self.search(alert.criteria, save_to_db=save_to_db)
+        jobs = await self.search(alert.criteria, save_to_db=False)
 
         if only_new:
             jobs = self._sqlite_store.get_new_jobs(jobs)
+
+        if save_to_db and jobs:
+            self._sqlite_store.save(jobs)
 
         return jobs
 

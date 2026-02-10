@@ -153,8 +153,12 @@ class AlertService:
 
         if keywords is not None or location is not None:
             # Need to update criteria
-            new_keywords = keywords if keywords is not None else existing.criteria.keywords
-            new_location = location if location is not None else existing.criteria.location
+            new_keywords = (
+                keywords if keywords is not None else existing.criteria.keywords
+            )
+            new_location = (
+                location if location is not None else existing.criteria.location
+            )
 
             new_criteria = SearchCriteria(
                 keywords=new_keywords,
@@ -225,12 +229,12 @@ class AlertService:
             Number of alerts migrated.
 
         Raises:
-            FileNotFoundError: If alerts_dir doesn't exist.
+            NotADirectoryError: If alerts_dir doesn't exist or is not a directory.
             ValueError: If alerts_file already exists.
         """
-        if not alerts_dir.exists():
-            msg = f"Alerts directory not found: {alerts_dir}"
-            raise FileNotFoundError(msg)
+        if not alerts_dir.is_dir():
+            msg = f"Source is not a directory: {alerts_dir}"
+            raise NotADirectoryError(msg)
 
         if alerts_file.exists():
             msg = f"Target file already exists: {alerts_file}"
