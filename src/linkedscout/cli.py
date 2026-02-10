@@ -227,8 +227,14 @@ def create_alert(
         bool, typer.Option("--remote", "-r", help="Only remote jobs")
     ] = False,
     hybrid: Annotated[bool, typer.Option("--hybrid", help="Only hybrid jobs")] = False,
+    on_site: Annotated[
+        bool, typer.Option("--on-site", help="Only on-site jobs")
+    ] = False,
     full_time: Annotated[
         bool, typer.Option("--full-time", help="Full-time only")
+    ] = False,
+    contract: Annotated[
+        bool, typer.Option("--contract", "-c", help="Contract/freelance only")
     ] = False,
     max_results: Annotated[
         int, typer.Option("--max", "-m", help="Maximum results")
@@ -252,11 +258,15 @@ def create_alert(
         work_models.append(WorkModel.REMOTE)
     if hybrid:
         work_models.append(WorkModel.HYBRID)
+    if on_site:
+        work_models.append(WorkModel.ON_SITE)
 
     # Build job types filter
     job_types: list[JobType] = []
     if full_time:
         job_types.append(JobType.FULL_TIME)
+    if contract:
+        job_types.append(JobType.CONTRACT)
 
     alert = service.create_alert(
         name=name,

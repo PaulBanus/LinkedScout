@@ -206,6 +206,38 @@ class TestAlertsCreateCommand:
         assert result.exit_code == 0
         assert "Created alert" in result.stdout
 
+    def test_create_alert_with_on_site_and_contract(self, temp_dir: Path):
+        """Test creating an alert with --on-site and --contract flags."""
+        with patch("linkedscout.cli.AlertService") as mock_service_class:
+            mock_service = mock_service_class.return_value
+            mock_service.get_alert.return_value = None
+            mock_service.create_alert.return_value = SavedAlert(
+                name="onsite-alert",
+                criteria=SearchCriteria(keywords="Python"),
+                enabled=True,
+            )
+            mock_service.get_alerts_file.return_value = temp_dir / "alerts.yaml"
+
+            result = runner.invoke(
+                app,
+                [
+                    "alerts", "create", "onsite-alert",
+                    "--keywords", "Python Developer",
+                    "--on-site",
+                    "--contract",
+                    "--file", str(temp_dir / "alerts.yaml"),
+                ],
+            )
+
+        assert result.exit_code == 0
+        assert "Created alert" in result.stdout
+        call_kwargs = mock_service.create_alert.call_args
+        work_models = call_kwargs.kwargs.get("work_models", [])
+        job_types = call_kwargs.kwargs.get("job_types", [])
+        from linkedscout.models.search import JobType, WorkModel
+        assert WorkModel.ON_SITE in work_models
+        assert JobType.CONTRACT in job_types
+
     def test_create_duplicate_alert_fails(self, temp_dir: Path):
         """Test that creating a duplicate alert fails."""
         with patch("linkedscout.cli.AlertService") as mock_service_class:
