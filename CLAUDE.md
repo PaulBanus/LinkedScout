@@ -49,6 +49,11 @@
 - `uv sync` - Install all dependencies
 - `uv run pre-commit install` - Install pre-commit hooks
 
+**Pre-commit (mandatory before tests)**
+- Always run `uv run pre-commit run --all-files` before running tests
+- Fix all findings before proceeding — do not skip or defer
+- Re-run until all hooks pass cleanly
+
 **Testing (pytest + pytest-asyncio + pytest-cov + respx)**
 - `uv run pytest` - Run all tests
 - `uv run pytest -v` - Verbose output (show test names)
@@ -94,6 +99,7 @@
 - Line length: 88 characters (ruff formatter)
 
 ## Testing Strategy
+- **Pre-commit gate**: Always run `uv run pre-commit run --all-files` and fix all findings before running any tests
 - **Unit tests**: Test individual components in isolation
 - **Async testing**: Use pytest-asyncio for async functions (asyncio_mode: auto)
 - **HTTP mocking**: Use respx to mock httpx requests (no real network calls)

@@ -1,6 +1,7 @@
 """Pytest configuration and shared fixtures."""
 
 import tempfile
+from collections.abc import Generator
 from pathlib import Path
 
 import pytest
@@ -9,7 +10,7 @@ from linkedscout.config import Settings
 
 
 @pytest.fixture
-def temp_dir():
+def temp_dir() -> Generator[Path]:
     """Create a temporary directory for test files."""
     with tempfile.TemporaryDirectory() as tmpdir:
         yield Path(tmpdir)

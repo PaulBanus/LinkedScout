@@ -38,7 +38,7 @@ class TestRelativeTimeParsing:
     )
     def test_parse_relative_time_various_formats(
         self, parser: HTMLParser, text: str, expected_delta: timedelta
-    ):
+    ) -> None:
         """Test parsing various relative time formats."""
         result = parser._parse_relative_time(text)
 
@@ -56,7 +56,7 @@ class TestRelativeTimeParsing:
             "JUST NOW",
         ],
     )
-    def test_parse_relative_time_just_now(self, parser: HTMLParser, text: str):
+    def test_parse_relative_time_just_now(self, parser: HTMLParser, text: str) -> None:
         """Test parsing 'just now' and similar phrases."""
         result = parser._parse_relative_time(text)
 
@@ -74,13 +74,13 @@ class TestRelativeTimeParsing:
             "posted recently",
         ],
     )
-    def test_parse_relative_time_invalid(self, parser: HTMLParser, text: str):
+    def test_parse_relative_time_invalid(self, parser: HTMLParser, text: str) -> None:
         """Test invalid time strings return None."""
         result = parser._parse_relative_time(text)
 
         assert result is None
 
-    def test_parse_relative_time_case_insensitive(self, parser: HTMLParser):
+    def test_parse_relative_time_case_insensitive(self, parser: HTMLParser) -> None:
         """Test that parsing is case insensitive."""
         result_lower = parser._parse_relative_time("2 days ago")
         result_upper = parser._parse_relative_time("2 DAYS AGO")
@@ -94,7 +94,7 @@ class TestRelativeTimeParsing:
         assert abs((result_lower - result_upper).total_seconds()) < 2
         assert abs((result_lower - result_mixed).total_seconds()) < 2
 
-    def test_parse_relative_time_with_whitespace(self, parser: HTMLParser):
+    def test_parse_relative_time_with_whitespace(self, parser: HTMLParser) -> None:
         """Test parsing with extra whitespace."""
         result = parser._parse_relative_time("  5 minutes ago  ")
 
@@ -109,7 +109,7 @@ class TestDateTimeParsing:
         """Create a parser instance."""
         return HTMLParser()
 
-    def test_parse_iso_datetime(self, parser: HTMLParser):
+    def test_parse_iso_datetime(self, parser: HTMLParser) -> None:
         """Test parsing ISO datetime string."""
         result = parser._parse_datetime("2024-01-15T10:30:00")
 
@@ -120,14 +120,14 @@ class TestDateTimeParsing:
         assert result.hour == 10
         assert result.minute == 30
 
-    def test_parse_iso_datetime_with_z(self, parser: HTMLParser):
+    def test_parse_iso_datetime_with_z(self, parser: HTMLParser) -> None:
         """Test parsing ISO datetime with Z suffix."""
         result = parser._parse_datetime("2024-01-15T10:30:00Z")
 
         assert result is not None
         assert result.year == 2024
 
-    def test_parse_iso_date_only(self, parser: HTMLParser):
+    def test_parse_iso_date_only(self, parser: HTMLParser) -> None:
         """Test parsing ISO date only."""
         result = parser._parse_datetime("2024-01-15")
 
@@ -136,13 +136,13 @@ class TestDateTimeParsing:
         assert result.month == 1
         assert result.day == 15
 
-    def test_parse_invalid_datetime(self, parser: HTMLParser):
+    def test_parse_invalid_datetime(self, parser: HTMLParser) -> None:
         """Test parsing invalid datetime returns None."""
         result = parser._parse_datetime("not-a-date")
 
         assert result is None
 
-    def test_parse_empty_datetime(self, parser: HTMLParser):
+    def test_parse_empty_datetime(self, parser: HTMLParser) -> None:
         """Test parsing empty string returns None."""
         result = parser._parse_datetime("")
 
@@ -169,8 +169,11 @@ class TestRemoteDetection:
             "100% Remote",
         ],
     )
-    def test_check_remote_from_location(self, parser: HTMLParser, location: str):
+    def test_check_remote_from_location(
+        self, parser: HTMLParser, location: str
+    ) -> None:
         """Test remote detection from location string."""
+
         # Create a mock card with no remote badge
         class MockCard:
             def css_first(self, _selector: str) -> None:
@@ -189,8 +192,11 @@ class TestRemoteDetection:
             "Hybrid - London",
         ],
     )
-    def test_check_remote_non_remote_location(self, parser: HTMLParser, location: str):
+    def test_check_remote_non_remote_location(
+        self, parser: HTMLParser, location: str
+    ) -> None:
         """Test non-remote locations without badge."""
+
         class MockCard:
             def css_first(self, _selector: str) -> None:
                 return None
@@ -199,8 +205,9 @@ class TestRemoteDetection:
 
         assert result is False
 
-    def test_check_remote_with_badge(self, parser: HTMLParser):
+    def test_check_remote_with_badge(self, parser: HTMLParser) -> None:
         """Test remote detection with remote badge element."""
+
         class MockBadge:
             pass
 
@@ -214,8 +221,9 @@ class TestRemoteDetection:
 
         assert result is True
 
-    def test_check_remote_from_search_criteria(self, parser: HTMLParser):
+    def test_check_remote_from_search_criteria(self, parser: HTMLParser) -> None:
         """Test remote detection when search criteria specifies remote-only."""
+
         class MockCard:
             def css_first(self, _selector: str) -> None:
                 return None
@@ -233,8 +241,9 @@ class TestRemoteDetection:
 
         assert result is True
 
-    def test_check_remote_multiple_work_models(self, parser: HTMLParser):
+    def test_check_remote_multiple_work_models(self, parser: HTMLParser) -> None:
         """Test that with multiple work models, HTML parsing is used."""
+
         class MockCard:
             def css_first(self, _selector: str) -> None:
                 return None
@@ -261,8 +270,9 @@ class TestJobIdExtraction:
         """Create a parser instance."""
         return HTMLParser()
 
-    def test_extract_job_id_from_urn(self, parser: HTMLParser):
+    def test_extract_job_id_from_urn(self, parser: HTMLParser) -> None:
         """Test extracting job ID from data-entity-urn attribute."""
+
         class MockCard:
             attributes: ClassVar[dict[str, str]] = {
                 "data-entity-urn": "urn:li:jobPosting:123456789"
@@ -275,8 +285,9 @@ class TestJobIdExtraction:
 
         assert result == "123456789"
 
-    def test_extract_job_id_from_link(self, parser: HTMLParser):
+    def test_extract_job_id_from_link(self, parser: HTMLParser) -> None:
         """Test extracting job ID from link href."""
+
         class MockLink:
             attributes: ClassVar[dict[str, str]] = {
                 "href": "https://www.linkedin.com/jobs/view/987654321"
@@ -294,8 +305,9 @@ class TestJobIdExtraction:
 
         assert result == "987654321"
 
-    def test_extract_job_id_no_id_found(self, parser: HTMLParser):
+    def test_extract_job_id_no_id_found(self, parser: HTMLParser) -> None:
         """Test extraction when no ID is found."""
+
         class MockCard:
             attributes: ClassVar[dict[str, str]] = {}
 
@@ -315,13 +327,15 @@ class TestParseJobs:
         """Create a parser instance."""
         return HTMLParser()
 
-    def test_parse_empty_html(self, parser: HTMLParser):
+    def test_parse_empty_html(self, parser: HTMLParser) -> None:
         """Test parsing empty HTML returns empty list."""
         result = parser.parse_jobs("<html><body></body></html>")
 
         assert result == []
 
-    def test_parse_jobs_with_remote_criteria_sets_is_remote(self, parser: HTMLParser):
+    def test_parse_jobs_with_remote_criteria_sets_is_remote(
+        self, parser: HTMLParser
+    ) -> None:
         """Test that jobs from remote-only search have is_remote=True.
 
         This test demonstrates the bug fix: when searching with remote-only criteria,
@@ -386,7 +400,9 @@ class TestParseJobs:
             f"because search criteria specified remote-only work model"
         )
 
-    def test_parse_jobs_without_criteria_uses_html_parsing(self, parser: HTMLParser):
+    def test_parse_jobs_without_criteria_uses_html_parsing(
+        self, parser: HTMLParser
+    ) -> None:
         """Test that without criteria, parser falls back to HTML-based detection."""
         html = """
         <html>
@@ -414,7 +430,7 @@ class TestParseJobs:
         assert len(jobs) == 1
         assert jobs[0].is_remote is False
 
-    def test_parse_html_with_no_job_cards(self, parser: HTMLParser):
+    def test_parse_html_with_no_job_cards(self, parser: HTMLParser) -> None:
         """Test parsing HTML without job cards."""
         html = """
         <html>
@@ -427,7 +443,7 @@ class TestParseJobs:
 
         assert result == []
 
-    def test_parse_deduplicates_jobs(self, parser: HTMLParser):
+    def test_parse_deduplicates_jobs(self, parser: HTMLParser) -> None:
         """Test that duplicate job IDs are deduplicated."""
         # HTML with the same job ID appearing twice
         html = """
@@ -465,7 +481,7 @@ class TestParseJobs:
         assert len(result) == 1
         assert result[0].id == "123"
 
-    def test_parse_extracts_salary(self, parser: HTMLParser):
+    def test_parse_extracts_salary(self, parser: HTMLParser) -> None:
         """Test that salary information is extracted."""
         html = """
         <html>
@@ -491,7 +507,7 @@ class TestParseJobs:
         assert len(result) == 1
         assert result[0].salary == "50k-70k EUR"
 
-    def test_parse_extracts_description_snippet(self, parser: HTMLParser):
+    def test_parse_extracts_description_snippet(self, parser: HTMLParser) -> None:
         """Test that description snippet is extracted."""
         html = """
         <html>

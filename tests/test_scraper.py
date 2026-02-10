@@ -4,6 +4,7 @@ import httpx
 import pytest
 import respx
 
+from linkedscout.config import Settings
 from linkedscout.models.search import SearchCriteria, TimeFilter, WorkModel
 from linkedscout.scraper.client import LinkedInClient
 from linkedscout.scraper.parser import HTMLParser
@@ -12,7 +13,7 @@ from linkedscout.scraper.parser import HTMLParser
 class TestHTMLParser:
     """Tests for HTML parser."""
 
-    def test_parse_jobs(self, sample_html: str):
+    def test_parse_jobs(self, sample_html: str) -> None:
         """Test parsing job listings from HTML."""
         parser = HTMLParser()
         jobs = parser.parse_jobs(sample_html)
@@ -34,14 +35,14 @@ class TestHTMLParser:
         assert jobs[1].location == "Remote"
         assert jobs[1].is_remote is True
 
-    def test_parse_empty_html(self):
+    def test_parse_empty_html(self) -> None:
         """Test parsing empty HTML returns empty list."""
         parser = HTMLParser()
         jobs = parser.parse_jobs("<html><body></body></html>")
 
         assert jobs == []
 
-    def test_parse_malformed_card(self):
+    def test_parse_malformed_card(self) -> None:
         """Test that malformed cards are skipped."""
         html = """
         <html>
@@ -65,7 +66,7 @@ class TestLinkedInClient:
 
     @pytest.mark.asyncio
     @respx.mock
-    async def test_search_jobs(self, test_settings, sample_html: str):
+    async def test_search_jobs(self, test_settings: Settings, sample_html: str) -> None:
         """Test searching for jobs."""
         # Mock the API response - first returns jobs, second is empty
         route = respx.get(LinkedInClient.BASE_URL)
@@ -88,7 +89,7 @@ class TestLinkedInClient:
 
     @pytest.mark.asyncio
     @respx.mock
-    async def test_search_empty_results(self, test_settings):
+    async def test_search_empty_results(self, test_settings: Settings) -> None:
         """Test search with no results."""
         respx.get(LinkedInClient.BASE_URL).mock(
             return_value=httpx.Response(200, text="<html><body></body></html>")
@@ -103,7 +104,9 @@ class TestLinkedInClient:
 
     @pytest.mark.asyncio
     @respx.mock
-    async def test_search_pagination(self, test_settings, sample_html: str):
+    async def test_search_pagination(
+        self, test_settings: Settings, sample_html: str
+    ) -> None:
         """Test that pagination works correctly."""
         # First page returns jobs, second page is empty
         route = respx.get(LinkedInClient.BASE_URL)
@@ -124,7 +127,9 @@ class TestLinkedInClient:
 
     @pytest.mark.asyncio
     @respx.mock
-    async def test_search_respects_max_results(self, test_settings, sample_html: str):
+    async def test_search_respects_max_results(
+        self, test_settings: Settings, sample_html: str
+    ) -> None:
         """Test that max_results is respected."""
         respx.get(LinkedInClient.BASE_URL).mock(
             return_value=httpx.Response(200, text=sample_html)
@@ -139,7 +144,9 @@ class TestLinkedInClient:
 
     @pytest.mark.asyncio
     @respx.mock
-    async def test_search_with_filters(self, test_settings, sample_html: str):
+    async def test_search_with_filters(
+        self, test_settings: Settings, sample_html: str
+    ) -> None:
         """Test search includes filter parameters."""
         route = respx.get(LinkedInClient.BASE_URL).mock(
             return_value=httpx.Response(200, text=sample_html)
@@ -161,7 +168,7 @@ class TestLinkedInClient:
         assert "f_TPR=r86400" in str(request.url)
 
     @pytest.mark.asyncio
-    async def test_client_not_initialized_error(self, test_settings):
+    async def test_client_not_initialized_error(self, test_settings: Settings) -> None:
         """Test error when client used without context manager."""
         client = LinkedInClient(test_settings)
         criteria = SearchCriteria(keywords="Python")
@@ -171,7 +178,9 @@ class TestLinkedInClient:
 
     @pytest.mark.asyncio
     @respx.mock
-    async def test_search_remote_only_sets_is_remote(self, test_settings):
+    async def test_search_remote_only_sets_is_remote(
+        self, test_settings: Settings
+    ) -> None:
         """Test that remote-only search criteria sets is_remote=True on all jobs."""
         # HTML with job that doesn't have "remote" in location or badge
         html = """

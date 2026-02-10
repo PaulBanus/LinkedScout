@@ -44,20 +44,22 @@ def sample_jobs() -> list[JobPosting]:
 class TestSearchCommand:
     """Tests for the search command."""
 
-    def test_search_requires_keywords(self):
+    def test_search_requires_keywords(self) -> None:
         """Test that search command requires keywords."""
         result = runner.invoke(app, ["search"])
 
         assert result.exit_code != 0
         # Typer may write error to stdout or output, check both
         output = result.stdout + (result.output or "")
-        assert "Missing option" in output or "keywords" in output.lower() or result.exit_code == 2
+        assert (
+            "Missing option" in output
+            or "keywords" in output.lower()
+            or result.exit_code == 2
+        )
 
-    def test_search_displays_results(self, sample_jobs: list[JobPosting]):
+    def test_search_displays_results(self, sample_jobs: list[JobPosting]) -> None:
         """Test search command displays job results."""
-        with patch(
-            "linkedscout.cli.JobService"
-        ) as mock_service_class:
+        with patch("linkedscout.cli.JobService") as mock_service_class:
             mock_service = mock_service_class.return_value
             mock_service.search = AsyncMock(return_value=sample_jobs)
 
@@ -65,8 +67,10 @@ class TestSearchCommand:
                 app,
                 [
                     "search",
-                    "--keywords", "Python Developer",
-                    "--location", "Paris",
+                    "--keywords",
+                    "Python Developer",
+                    "--location",
+                    "Paris",
                 ],
             )
 
@@ -75,7 +79,7 @@ class TestSearchCommand:
         assert "Acme Corp" in result.stdout
         assert "Found 2 jobs" in result.stdout
 
-    def test_search_no_results(self):
+    def test_search_no_results(self) -> None:
         """Test search command with no results."""
         with patch("linkedscout.cli.JobService") as mock_service_class:
             mock_service = mock_service_class.return_value
@@ -85,7 +89,8 @@ class TestSearchCommand:
                 app,
                 [
                     "search",
-                    "--keywords", "NonexistentJob12345",
+                    "--keywords",
+                    "NonexistentJob12345",
                 ],
             )
 
@@ -94,7 +99,7 @@ class TestSearchCommand:
 
     def test_search_saves_to_json(
         self, temp_dir: Path, sample_jobs: list[JobPosting]
-    ):
+    ) -> None:
         """Test search command saves results to JSON."""
         output_file = temp_dir / "output.json"
 
@@ -107,15 +112,17 @@ class TestSearchCommand:
                 app,
                 [
                     "search",
-                    "--keywords", "Python",
-                    "--output", str(output_file),
+                    "--keywords",
+                    "Python",
+                    "--output",
+                    str(output_file),
                 ],
             )
 
         assert result.exit_code == 0
         assert f"Saved 2 jobs to {output_file}" in result.stdout
 
-    def test_search_with_filters(self, sample_jobs: list[JobPosting]):
+    def test_search_with_filters(self, sample_jobs: list[JobPosting]) -> None:
         """Test search command with work model and job type filters."""
         with patch("linkedscout.cli.JobService") as mock_service_class:
             mock_service = mock_service_class.return_value
@@ -125,11 +132,14 @@ class TestSearchCommand:
                 app,
                 [
                     "search",
-                    "--keywords", "Python",
+                    "--keywords",
+                    "Python",
                     "--remote",
                     "--full-time",
-                    "--time", "24h",
-                    "--max", "50",
+                    "--time",
+                    "24h",
+                    "--max",
+                    "50",
                 ],
             )
 
@@ -141,7 +151,7 @@ class TestSearchCommand:
 class TestAlertsListCommand:
     """Tests for alerts list command."""
 
-    def test_list_alerts_empty(self, temp_dir: Path):
+    def test_list_alerts_empty(self, temp_dir: Path) -> None:
         """Test listing alerts when none exist."""
         result = runner.invoke(
             app,
@@ -151,7 +161,7 @@ class TestAlertsListCommand:
         assert result.exit_code == 0
         assert "No alerts found" in result.stdout
 
-    def test_list_alerts_shows_alerts(self, temp_dir: Path):
+    def test_list_alerts_shows_alerts(self, temp_dir: Path) -> None:
         """Test listing alerts displays them in a table."""
         with patch("linkedscout.cli.AlertService") as mock_service_class:
             mock_service = mock_service_class.return_value
@@ -182,7 +192,7 @@ class TestAlertsListCommand:
 class TestAlertsCreateCommand:
     """Tests for alerts create command."""
 
-    def test_create_alert(self, temp_dir: Path):
+    def test_create_alert(self, temp_dir: Path) -> None:
         """Test creating an alert."""
         with patch("linkedscout.cli.AlertService") as mock_service_class:
             mock_service = mock_service_class.return_value
@@ -197,16 +207,20 @@ class TestAlertsCreateCommand:
             result = runner.invoke(
                 app,
                 [
-                    "alerts", "create", "new-alert",
-                    "--keywords", "Python Developer",
-                    "--file", str(temp_dir / "alerts.yaml"),
+                    "alerts",
+                    "create",
+                    "new-alert",
+                    "--keywords",
+                    "Python Developer",
+                    "--file",
+                    str(temp_dir / "alerts.yaml"),
                 ],
             )
 
         assert result.exit_code == 0
         assert "Created alert" in result.stdout
 
-    def test_create_alert_with_on_site_and_contract(self, temp_dir: Path):
+    def test_create_alert_with_on_site_and_contract(self, temp_dir: Path) -> None:
         """Test creating an alert with --on-site and --contract flags."""
         with patch("linkedscout.cli.AlertService") as mock_service_class:
             mock_service = mock_service_class.return_value
@@ -221,11 +235,15 @@ class TestAlertsCreateCommand:
             result = runner.invoke(
                 app,
                 [
-                    "alerts", "create", "onsite-alert",
-                    "--keywords", "Python Developer",
+                    "alerts",
+                    "create",
+                    "onsite-alert",
+                    "--keywords",
+                    "Python Developer",
                     "--on-site",
                     "--contract",
-                    "--file", str(temp_dir / "alerts.yaml"),
+                    "--file",
+                    str(temp_dir / "alerts.yaml"),
                 ],
             )
 
@@ -235,10 +253,11 @@ class TestAlertsCreateCommand:
         work_models = call_kwargs.kwargs.get("work_models", [])
         job_types = call_kwargs.kwargs.get("job_types", [])
         from linkedscout.models.search import JobType, WorkModel
+
         assert WorkModel.ON_SITE in work_models
         assert JobType.CONTRACT in job_types
 
-    def test_create_duplicate_alert_fails(self, temp_dir: Path):
+    def test_create_duplicate_alert_fails(self, temp_dir: Path) -> None:
         """Test that creating a duplicate alert fails."""
         with patch("linkedscout.cli.AlertService") as mock_service_class:
             mock_service = mock_service_class.return_value
@@ -251,9 +270,13 @@ class TestAlertsCreateCommand:
             result = runner.invoke(
                 app,
                 [
-                    "alerts", "create", "existing-alert",
-                    "--keywords", "Java",
-                    "--file", str(temp_dir),
+                    "alerts",
+                    "create",
+                    "existing-alert",
+                    "--keywords",
+                    "Java",
+                    "--file",
+                    str(temp_dir),
                 ],
             )
 
@@ -264,7 +287,7 @@ class TestAlertsCreateCommand:
 class TestAlertsDeleteCommand:
     """Tests for alerts delete command."""
 
-    def test_delete_alert_with_force(self, temp_dir: Path):
+    def test_delete_alert_with_force(self, temp_dir: Path) -> None:
         """Test deleting an alert with force flag."""
         with patch("linkedscout.cli.AlertService") as mock_service_class:
             mock_service = mock_service_class.return_value
@@ -278,16 +301,19 @@ class TestAlertsDeleteCommand:
             result = runner.invoke(
                 app,
                 [
-                    "alerts", "delete", "delete-me",
+                    "alerts",
+                    "delete",
+                    "delete-me",
                     "--force",
-                    "--file", str(temp_dir),
+                    "--file",
+                    str(temp_dir),
                 ],
             )
 
         assert result.exit_code == 0
         assert "Deleted alert" in result.stdout
 
-    def test_delete_nonexistent_alert(self, temp_dir: Path):
+    def test_delete_nonexistent_alert(self, temp_dir: Path) -> None:
         """Test deleting a nonexistent alert fails."""
         with patch("linkedscout.cli.AlertService") as mock_service_class:
             mock_service = mock_service_class.return_value
@@ -296,9 +322,12 @@ class TestAlertsDeleteCommand:
             result = runner.invoke(
                 app,
                 [
-                    "alerts", "delete", "nonexistent",
+                    "alerts",
+                    "delete",
+                    "nonexistent",
                     "--force",
-                    "--file", str(temp_dir),
+                    "--file",
+                    str(temp_dir),
                 ],
             )
 
@@ -309,7 +338,7 @@ class TestAlertsDeleteCommand:
 class TestAlertsRunCommand:
     """Tests for alerts run command."""
 
-    def test_run_requires_name_or_all(self, temp_dir: Path):
+    def test_run_requires_name_or_all(self, temp_dir: Path) -> None:
         """Test that run command requires --name or --all."""
         result = runner.invoke(
             app,
@@ -321,7 +350,7 @@ class TestAlertsRunCommand:
 
     def test_run_specific_alert(
         self, temp_dir: Path, sample_jobs: list[JobPosting]
-    ):
+    ) -> None:
         """Test running a specific alert by name."""
         alert = SavedAlert(
             name="test-alert",
@@ -329,9 +358,10 @@ class TestAlertsRunCommand:
             enabled=True,
         )
 
-        with patch("linkedscout.cli.AlertService") as mock_alert_class, patch(
-            "linkedscout.cli.JobService"
-        ) as mock_job_class:
+        with (
+            patch("linkedscout.cli.AlertService") as mock_alert_class,
+            patch("linkedscout.cli.JobService") as mock_job_class,
+        ):
             mock_alert = mock_alert_class.return_value
             mock_alert.get_alert.return_value = alert
 
@@ -341,16 +371,21 @@ class TestAlertsRunCommand:
             result = runner.invoke(
                 app,
                 [
-                    "alerts", "run",
-                    "--name", "test-alert",
-                    "--file", str(temp_dir),
+                    "alerts",
+                    "run",
+                    "--name",
+                    "test-alert",
+                    "--file",
+                    str(temp_dir),
                 ],
             )
 
         assert result.exit_code == 0
         assert "Found 2 unique jobs" in result.stdout
 
-    def test_run_all_alerts(self, temp_dir: Path, sample_jobs: list[JobPosting]):
+    def test_run_all_alerts(
+        self, temp_dir: Path, sample_jobs: list[JobPosting]
+    ) -> None:
         """Test running all enabled alerts."""
         alerts = [
             SavedAlert(
@@ -365,9 +400,10 @@ class TestAlertsRunCommand:
             ),
         ]
 
-        with patch("linkedscout.cli.AlertService") as mock_alert_class, patch(
-            "linkedscout.cli.JobService"
-        ) as mock_job_class:
+        with (
+            patch("linkedscout.cli.AlertService") as mock_alert_class,
+            patch("linkedscout.cli.JobService") as mock_job_class,
+        ):
             mock_alert = mock_alert_class.return_value
             mock_alert.get_enabled_alerts.return_value = alerts
 
@@ -383,7 +419,7 @@ class TestAlertsRunCommand:
         # Jobs are deduplicated, so we should see 2 unique jobs
         assert "unique jobs" in result.stdout
 
-    def test_run_alert_not_found(self, temp_dir: Path):
+    def test_run_alert_not_found(self, temp_dir: Path) -> None:
         """Test running a nonexistent alert fails."""
         with patch("linkedscout.cli.AlertService") as mock_alert_class:
             mock_alert = mock_alert_class.return_value
@@ -392,9 +428,12 @@ class TestAlertsRunCommand:
             result = runner.invoke(
                 app,
                 [
-                    "alerts", "run",
-                    "--name", "nonexistent",
-                    "--file", str(temp_dir),
+                    "alerts",
+                    "run",
+                    "--name",
+                    "nonexistent",
+                    "--file",
+                    str(temp_dir),
                 ],
             )
 
@@ -405,7 +444,7 @@ class TestAlertsRunCommand:
 class TestAlertsEnableDisableCommands:
     """Tests for alerts enable/disable commands."""
 
-    def test_enable_alert(self, temp_dir: Path):
+    def test_enable_alert(self, temp_dir: Path) -> None:
         """Test enabling an alert."""
         with patch("linkedscout.cli.AlertService") as mock_service_class:
             mock_service = mock_service_class.return_value
@@ -423,7 +462,7 @@ class TestAlertsEnableDisableCommands:
         assert result.exit_code == 0
         assert "Enabled alert" in result.stdout
 
-    def test_enable_nonexistent_alert(self, temp_dir: Path):
+    def test_enable_nonexistent_alert(self, temp_dir: Path) -> None:
         """Test enabling a nonexistent alert fails."""
         with patch("linkedscout.cli.AlertService") as mock_service_class:
             mock_service = mock_service_class.return_value
@@ -437,7 +476,7 @@ class TestAlertsEnableDisableCommands:
         assert result.exit_code == 1
         assert "not found" in result.stdout
 
-    def test_disable_alert(self, temp_dir: Path):
+    def test_disable_alert(self, temp_dir: Path) -> None:
         """Test disabling an alert."""
         with patch("linkedscout.cli.AlertService") as mock_service_class:
             mock_service = mock_service_class.return_value
@@ -476,7 +515,7 @@ class TestTimeFilterParsing:
         sample_jobs: list[JobPosting],
         time_arg: str,
         expected_display: str,
-    ):
+    ) -> None:
         """Test various time filter formats are accepted."""
         with patch("linkedscout.cli.JobService") as mock_service_class:
             mock_service = mock_service_class.return_value
@@ -486,8 +525,10 @@ class TestTimeFilterParsing:
                 app,
                 [
                     "search",
-                    "--keywords", "Python",
-                    "--time", time_arg,
+                    "--keywords",
+                    "Python",
+                    "--time",
+                    time_arg,
                 ],
             )
 

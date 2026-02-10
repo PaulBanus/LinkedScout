@@ -42,7 +42,9 @@ def sample_jobs() -> list[JobPosting]:
 class TestJsonStore:
     """Tests for JsonStore."""
 
-    def test_save_creates_directory(self, temp_dir: Path, sample_jobs: list[JobPosting]):
+    def test_save_creates_directory(
+        self, temp_dir: Path, sample_jobs: list[JobPosting]
+    ) -> None:
         """Test that save creates the output directory if it doesn't exist."""
         output_dir = temp_dir / "nested" / "output"
         store = JsonStore(output_dir)
@@ -52,7 +54,7 @@ class TestJsonStore:
         assert output_dir.exists()
         assert path.exists()
 
-    def test_save_and_load(self, temp_dir: Path, sample_jobs: list[JobPosting]):
+    def test_save_and_load(self, temp_dir: Path, sample_jobs: list[JobPosting]) -> None:
         """Test saving and loading jobs."""
         store = JsonStore(temp_dir)
 
@@ -68,7 +70,9 @@ class TestJsonStore:
         assert loaded[1].id == "2"
         assert loaded[1].is_remote is True
 
-    def test_load_with_extension(self, temp_dir: Path, sample_jobs: list[JobPosting]):
+    def test_load_with_extension(
+        self, temp_dir: Path, sample_jobs: list[JobPosting]
+    ) -> None:
         """Test loading with .json extension included."""
         store = JsonStore(temp_dir)
         store.save(sample_jobs, "test-jobs")
@@ -77,7 +81,7 @@ class TestJsonStore:
 
         assert len(loaded) == 2
 
-    def test_load_nonexistent_returns_empty(self, temp_dir: Path):
+    def test_load_nonexistent_returns_empty(self, temp_dir: Path) -> None:
         """Test loading nonexistent file returns empty list."""
         store = JsonStore(temp_dir)
 
@@ -85,7 +89,7 @@ class TestJsonStore:
 
         assert loaded == []
 
-    def test_save_to_path(self, temp_dir: Path, sample_jobs: list[JobPosting]):
+    def test_save_to_path(self, temp_dir: Path, sample_jobs: list[JobPosting]) -> None:
         """Test saving to specific path."""
         store = JsonStore(temp_dir)
         custom_path = temp_dir / "custom" / "jobs.json"
@@ -97,7 +101,7 @@ class TestJsonStore:
         assert data["count"] == 2
         assert len(data["jobs"]) == 2
 
-    def test_save_preserves_all_fields(self, temp_dir: Path):
+    def test_save_preserves_all_fields(self, temp_dir: Path) -> None:
         """Test that save preserves all job fields."""
         job = JobPosting(
             id="test-id",
@@ -122,7 +126,7 @@ class TestJsonStore:
         assert loaded[0].is_remote is True
         assert loaded[0].applicants_count == "50 applicants"
 
-    def test_save_empty_list(self, temp_dir: Path):
+    def test_save_empty_list(self, temp_dir: Path) -> None:
         """Test saving an empty list."""
         store = JsonStore(temp_dir)
 
@@ -136,7 +140,7 @@ class TestJsonStore:
 class TestSqliteStore:
     """Tests for SqliteStore."""
 
-    def test_init_creates_database(self, temp_dir: Path):
+    def test_init_creates_database(self, temp_dir: Path) -> None:
         """Test that initializing creates the database file."""
         db_path = temp_dir / "test.db"
 
@@ -144,7 +148,7 @@ class TestSqliteStore:
 
         assert db_path.exists()
 
-    def test_save_new_jobs(self, temp_dir: Path, sample_jobs: list[JobPosting]):
+    def test_save_new_jobs(self, temp_dir: Path, sample_jobs: list[JobPosting]) -> None:
         """Test saving new jobs to database."""
         store = SqliteStore(temp_dir / "test.db")
 
@@ -156,7 +160,7 @@ class TestSqliteStore:
 
     def test_save_duplicate_updates_last_seen(
         self, temp_dir: Path, sample_jobs: list[JobPosting]
-    ):
+    ) -> None:
         """Test that duplicate jobs update last_seen_at."""
         store = SqliteStore(temp_dir / "test.db")
 
@@ -169,7 +173,7 @@ class TestSqliteStore:
 
     def test_save_mixed_new_and_existing(
         self, temp_dir: Path, sample_jobs: list[JobPosting]
-    ):
+    ) -> None:
         """Test saving a mix of new and existing jobs."""
         store = SqliteStore(temp_dir / "test.db")
         store.save([sample_jobs[0]])  # Save first job
@@ -190,7 +194,7 @@ class TestSqliteStore:
 
     def test_get_new_jobs_filters_existing(
         self, temp_dir: Path, sample_jobs: list[JobPosting]
-    ):
+    ) -> None:
         """Test filtering to only new jobs."""
         store = SqliteStore(temp_dir / "test.db")
         store.save([sample_jobs[0]])  # Save first job
@@ -200,7 +204,7 @@ class TestSqliteStore:
         assert len(new_jobs) == 1
         assert new_jobs[0].id == "2"
 
-    def test_get_new_jobs_empty_input(self, temp_dir: Path):
+    def test_get_new_jobs_empty_input(self, temp_dir: Path) -> None:
         """Test get_new_jobs with empty input returns empty list."""
         store = SqliteStore(temp_dir / "test.db")
 
@@ -210,7 +214,7 @@ class TestSqliteStore:
 
     def test_get_new_jobs_all_existing(
         self, temp_dir: Path, sample_jobs: list[JobPosting]
-    ):
+    ) -> None:
         """Test get_new_jobs when all jobs already exist."""
         store = SqliteStore(temp_dir / "test.db")
         store.save(sample_jobs)
@@ -221,7 +225,7 @@ class TestSqliteStore:
 
     def test_get_new_jobs_all_new(
         self, temp_dir: Path, sample_jobs: list[JobPosting]
-    ):
+    ) -> None:
         """Test get_new_jobs when all jobs are new."""
         store = SqliteStore(temp_dir / "test.db")
 
@@ -231,7 +235,7 @@ class TestSqliteStore:
 
     def test_get_jobs_with_company_filter(
         self, temp_dir: Path, sample_jobs: list[JobPosting]
-    ):
+    ) -> None:
         """Test filtering jobs by company."""
         store = SqliteStore(temp_dir / "test.db")
         store.save(sample_jobs)
@@ -241,7 +245,7 @@ class TestSqliteStore:
         assert len(filtered) == 1
         assert filtered[0].company == "Acme Corp"
 
-    def test_get_jobs_company_filter_partial_match(self, temp_dir: Path):
+    def test_get_jobs_company_filter_partial_match(self, temp_dir: Path) -> None:
         """Test company filter with partial match."""
         jobs = [
             JobPosting(
@@ -273,7 +277,9 @@ class TestSqliteStore:
 
         assert len(filtered) == 2
 
-    def test_get_jobs_pagination(self, temp_dir: Path, sample_jobs: list[JobPosting]):
+    def test_get_jobs_pagination(
+        self, temp_dir: Path, sample_jobs: list[JobPosting]
+    ) -> None:
         """Test pagination of job results."""
         store = SqliteStore(temp_dir / "test.db")
         store.save(sample_jobs)
@@ -285,7 +291,7 @@ class TestSqliteStore:
         assert len(page2) == 1
         assert page1[0].id != page2[0].id
 
-    def test_get_jobs_limit(self, temp_dir: Path):
+    def test_get_jobs_limit(self, temp_dir: Path) -> None:
         """Test that limit restricts results."""
         jobs = [
             JobPosting(
@@ -304,13 +310,13 @@ class TestSqliteStore:
 
         assert len(result) == 5
 
-    def test_count_empty_database(self, temp_dir: Path):
+    def test_count_empty_database(self, temp_dir: Path) -> None:
         """Test count on empty database."""
         store = SqliteStore(temp_dir / "test.db")
 
         assert store.count() == 0
 
-    def test_save_preserves_all_fields(self, temp_dir: Path):
+    def test_save_preserves_all_fields(self, temp_dir: Path) -> None:
         """Test that save preserves all job fields in database."""
         from datetime import datetime
 
@@ -342,7 +348,9 @@ class TestSqliteStore:
         assert retrieved[0].is_remote is True
         assert retrieved[0].applicants_count == "50 applicants"
 
-    def test_multiple_stores_same_database(self, temp_dir: Path, sample_jobs: list[JobPosting]):
+    def test_multiple_stores_same_database(
+        self, temp_dir: Path, sample_jobs: list[JobPosting]
+    ) -> None:
         """Test that multiple store instances can access the same database."""
         db_path = temp_dir / "shared.db"
 
@@ -353,7 +361,9 @@ class TestSqliteStore:
 
         assert store2.count() == 2
 
-    def test_get_jobs_no_company_filter(self, temp_dir: Path, sample_jobs: list[JobPosting]):
+    def test_get_jobs_no_company_filter(
+        self, temp_dir: Path, sample_jobs: list[JobPosting]
+    ) -> None:
         """Test getting jobs without company filter."""
         store = SqliteStore(temp_dir / "test.db")
         store.save(sample_jobs)
