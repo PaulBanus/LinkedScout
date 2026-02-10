@@ -41,7 +41,7 @@ packages = ["src/linkedscout"]
 [tool.ruff]
 src = ["src"]
 line-length = 88
-target-version = "py314"
+target-version = "py313"
 
 [tool.ruff.lint]
 select = [

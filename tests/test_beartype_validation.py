@@ -1,11 +1,14 @@
 """Tests for beartype runtime type validation."""
 
-import pytest
-from beartype.roar import BeartypeCallHintParamViolation, BeartypeCallHintReturnViolation
 from pathlib import Path
 
+import pytest
+from beartype.roar import (
+    BeartypeCallHintParamViolation,
+)
+
 from linkedscout.models.job import JobPosting
-from linkedscout.models.search import SearchCriteria, SavedAlert, TimeFilter
+from linkedscout.models.search import SavedAlert, SearchCriteria, TimeFilter
 from linkedscout.scraper.parser import HTMLParser
 from linkedscout.storage.json_store import JsonStore
 from linkedscout.storage.sqlite_store import SqliteStore
