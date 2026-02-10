@@ -362,8 +362,16 @@ def run_alerts(
             seen_ids.add(job.id)
             unique_jobs.append(job)
 
-    # Sort by date (most recent first)
-    unique_jobs.sort(key=lambda j: j.posted_at or j.scraped_at, reverse=True)
+    # Sort by date (most recent first), using .timestamp() to avoid
+    # TypeError from mixing naive and aware datetimes
+    unique_jobs.sort(
+        key=lambda j: (
+            (j.posted_at or j.scraped_at).timestamp()
+            if (j.posted_at or j.scraped_at)
+            else 0.0
+        ),
+        reverse=True,
+    )
 
     console.print(f"\n[bold]Found {len(unique_jobs)} unique jobs[/bold]")
 
