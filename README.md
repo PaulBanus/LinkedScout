@@ -4,7 +4,7 @@ Gather job listings from LinkedIn using multiple search criteria and obtain the 
 
 ## Features
 
-- Search LinkedIn jobs without authentication (public API)
+- Search LinkedIn jobs without authentication (public listings)
 - Save search criteria as YAML alerts
 - Filter by keywords, location, work model (remote/hybrid/on-site)
 - Configurable time window (24h, 7 days, 30 days)
@@ -262,7 +262,7 @@ Configured hooks (see `.pre-commit-config.yaml`):
 
 ## Disclaimer
 
-This tool accesses LinkedIn's public jobs API for personal and educational use. While the data is publicly accessible, automated scraping may violate [LinkedIn's Terms of Service](https://www.linkedin.com/legal/user-agreement). Use responsibly and at your own risk.
+This tool accesses LinkedIn's public job listings for personal and educational use. While the data is publicly accessible, automated scraping may violate [LinkedIn's Terms of Service](https://www.linkedin.com/legal/user-agreement). Use responsibly and at your own risk.
 
 This project is not affiliated with or endorsed by LinkedIn.
 

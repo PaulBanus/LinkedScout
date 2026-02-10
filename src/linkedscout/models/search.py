@@ -236,8 +236,21 @@ class AlertsConfig(BaseModel):
             return cls(alerts=[])
 
         alerts = []
-        for alert_data in data["alerts"]:
+        for i, alert_data in enumerate(data["alerts"]):
+            if not isinstance(alert_data, dict):
+                msg = f"Invalid alert at index {i}: expected a mapping, got {type(alert_data).__name__}"
+                raise ValueError(msg)
+            if "name" not in alert_data:
+                msg = f"Invalid alert at index {i}: missing required key 'name'"
+                raise ValueError(msg)
+            if "criteria" not in alert_data:
+                msg = f"Invalid alert at index {i} ('{alert_data['name']}'): missing required key 'criteria'"
+                raise ValueError(msg)
             criteria_data = alert_data["criteria"]
+            if not isinstance(criteria_data, dict):
+                msg = f"Invalid alert at index {i} ('{alert_data['name']}'): 'criteria' must be a mapping, got {type(criteria_data).__name__}"
+                raise ValueError(msg)
+
             criteria = SearchCriteria(
                 keywords=criteria_data["keywords"],
                 location=criteria_data.get("location", ""),

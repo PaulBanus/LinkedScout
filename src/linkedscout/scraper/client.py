@@ -127,6 +127,8 @@ class LinkedInClient:
         params = criteria.to_params()
         params["start"] = str(start)
 
+        last_exc: httpx.HTTPStatusError | httpx.RequestError | None = None
+
         for attempt in range(self._settings.max_retries):
             try:
                 response = await self._client.get(self.BASE_URL, params=params)
@@ -135,6 +137,7 @@ class LinkedInClient:
                 self._rate_limiter.record_success()
                 return jobs
             except httpx.HTTPStatusError as e:
+                last_exc = e
                 if e.response.status_code == 429:
                     self._rate_limiter.increase_backoff()
                     logger.info(
@@ -149,16 +152,15 @@ class LinkedInClient:
                     attempt + 1,
                     self._settings.max_retries,
                 )
-                if attempt == self._settings.max_retries - 1:
-                    raise
             except httpx.RequestError as e:
+                last_exc = e
                 logger.warning(
                     "Network error on attempt %d/%d: %s, retrying...",
                     attempt + 1,
                     self._settings.max_retries,
                     str(e),
                 )
-                if attempt == self._settings.max_retries - 1:
-                    raise
 
-        return []
+        raise RuntimeError(
+            f"Failed to fetch page after {self._settings.max_retries} retries"
+        ) from last_exc

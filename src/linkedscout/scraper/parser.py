@@ -128,7 +128,7 @@ class HTMLParser:
                 applicants_count=applicants,
             )
 
-        except ValueError, AttributeError, TypeError, KeyError:
+        except (ValueError, AttributeError, TypeError, KeyError):
             logger.warning("Failed to parse job card", exc_info=True)
             return None
 

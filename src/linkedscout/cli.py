@@ -1,7 +1,7 @@
 """CLI interface for LinkedScout."""
 
 import asyncio
-from pathlib import Path  # noqa: TC003 - used at runtime by typer
+from pathlib import Path
 from typing import Annotated
 
 import typer
@@ -476,9 +476,9 @@ def migrate_alerts(
         )
         console.print(f"[dim]You can now delete the old directory: {from_dir}[/dim]")
 
-    except Exception as e:
+    except (NotADirectoryError, ValueError, OSError) as e:
         console.print(f"[red]Migration failed: {e}[/red]")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 if __name__ == "__main__":
