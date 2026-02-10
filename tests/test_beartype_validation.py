@@ -53,7 +53,7 @@ def test_html_parser_parse_jobs_invalid_input() -> None:
 
     with pytest.raises(BeartypeCallHintParamViolation):
         # Passing int instead of str should fail
-        parser.parse_jobs(123)  # type: ignore[arg-type]
+        parser.parse_jobs(123)
 
 
 def test_html_parser_parse_jobs_return_type() -> None:
@@ -70,7 +70,7 @@ def test_json_store_save_invalid_jobs_type() -> None:
 
     with pytest.raises(BeartypeCallHintParamViolation):
         # Passing dict instead of list should fail
-        store.save({}, "test")  # type: ignore[arg-type]
+        store.save({}, "test")
 
 
 def test_json_store_save_invalid_filename_type() -> None:
@@ -86,7 +86,7 @@ def test_json_store_save_invalid_filename_type() -> None:
 
     with pytest.raises(BeartypeCallHintParamViolation):
         # Passing int instead of str should fail
-        store.save([job], 123)  # type: ignore[arg-type]
+        store.save([job], 123)
 
 
 def test_json_store_load_invalid_filename_type() -> None:
@@ -95,7 +95,7 @@ def test_json_store_load_invalid_filename_type() -> None:
 
     with pytest.raises(BeartypeCallHintParamViolation):
         # Passing int instead of str should fail
-        store.load(123)  # type: ignore[arg-type]
+        store.load(123)
 
 
 def test_sqlite_store_get_jobs_invalid_limit_type() -> None:
@@ -104,7 +104,7 @@ def test_sqlite_store_get_jobs_invalid_limit_type() -> None:
 
     with pytest.raises(BeartypeCallHintParamViolation):
         # Passing str instead of int should fail
-        store.get_jobs(limit="10")  # type: ignore[arg-type]
+        store.get_jobs(limit="10")
 
 
 def test_sqlite_store_save_invalid_jobs_type() -> None:
@@ -113,18 +113,18 @@ def test_sqlite_store_save_invalid_jobs_type() -> None:
 
     with pytest.raises(BeartypeCallHintParamViolation):
         # Passing dict instead of list should fail
-        store.save({})  # type: ignore[arg-type]
+        store.save({})
 
 
 def test_rate_limiter_init_invalid_types() -> None:
     """Test that RateLimiter.__init__ validates parameter types."""
     with pytest.raises(BeartypeCallHintParamViolation):
         # Passing str instead of float for min_delay
-        RateLimiter(min_delay="1.5")  # type: ignore[arg-type]
+        RateLimiter(min_delay="1.5")
 
     with pytest.raises(BeartypeCallHintParamViolation):
         # Passing str instead of int for reset_after
-        RateLimiter(reset_after="5")  # type: ignore[arg-type]
+        RateLimiter(reset_after="5")
 
 
 def test_saved_alert_to_yaml_return_type() -> None:
@@ -158,7 +158,7 @@ def test_time_filter_enum_validation() -> None:
     with pytest.raises((ValueError, TypeError)):
         SearchCriteria(
             keywords="Python",
-            time_filter="invalid",  # type: ignore[arg-type]
+            time_filter="invalid",
         )
 
 
@@ -172,4 +172,4 @@ def test_multiple_parameter_validation() -> None:
 
     # Second parameter invalid - should fail
     with pytest.raises(BeartypeCallHintParamViolation):
-        parser._check_remote(None, 123)  # type: ignore[arg-type]
+        parser._check_remote(None, 123)

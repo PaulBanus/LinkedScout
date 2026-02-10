@@ -1,10 +1,12 @@
 """Tests for services."""
 
+from pathlib import Path
 
 import httpx
 import pytest
 import respx
 
+from linkedscout.config import Settings
 from linkedscout.models.job import JobPosting
 from linkedscout.models.search import (
     SavedAlert,
@@ -20,7 +22,7 @@ from linkedscout.services.job_service import JobService
 class TestAlertService:
     """Tests for AlertService."""
 
-    def test_create_alert(self, test_settings):
+    def test_create_alert(self, test_settings: Settings) -> None:
         """Test creating an alert."""
         service = AlertService(test_settings)
 
@@ -39,7 +41,7 @@ class TestAlertService:
         # Check file was created
         assert test_settings.alerts_file.exists()
 
-    def test_list_alerts(self, test_settings):
+    def test_list_alerts(self, test_settings: Settings) -> None:
         """Test listing alerts."""
         service = AlertService(test_settings)
 
@@ -56,7 +58,7 @@ class TestAlertService:
         assert alerts[1].name == "alert-b"
         assert alerts[2].name == "alert-c"
 
-    def test_get_alert(self, test_settings):
+    def test_get_alert(self, test_settings: Settings) -> None:
         """Test getting a specific alert."""
         service = AlertService(test_settings)
         service.create_alert(name="my-alert", keywords="Python")
@@ -66,7 +68,7 @@ class TestAlertService:
         assert alert is not None
         assert alert.name == "my-alert"
 
-    def test_get_nonexistent_alert(self, test_settings):
+    def test_get_nonexistent_alert(self, test_settings: Settings) -> None:
         """Test getting a nonexistent alert returns None."""
         service = AlertService(test_settings)
 
@@ -74,7 +76,7 @@ class TestAlertService:
 
         assert alert is None
 
-    def test_update_alert(self, test_settings):
+    def test_update_alert(self, test_settings: Settings) -> None:
         """Test updating an alert."""
         service = AlertService(test_settings)
         service.create_alert(name="update-test", keywords="Python")
@@ -89,7 +91,7 @@ class TestAlertService:
         assert loaded is not None
         assert loaded.enabled is False
 
-    def test_delete_alert(self, test_settings):
+    def test_delete_alert(self, test_settings: Settings) -> None:
         """Test deleting an alert."""
         service = AlertService(test_settings)
         service.create_alert(name="delete-me", keywords="Python")
@@ -99,7 +101,7 @@ class TestAlertService:
         assert result is True
         assert service.get_alert("delete-me") is None
 
-    def test_delete_nonexistent_alert(self, test_settings):
+    def test_delete_nonexistent_alert(self, test_settings: Settings) -> None:
         """Test deleting nonexistent alert returns False."""
         service = AlertService(test_settings)
 
@@ -107,7 +109,7 @@ class TestAlertService:
 
         assert result is False
 
-    def test_get_enabled_alerts(self, test_settings):
+    def test_get_enabled_alerts(self, test_settings: Settings) -> None:
         """Test getting only enabled alerts."""
         service = AlertService(test_settings)
         service.create_alert(name="enabled-1", keywords="Python", enabled=True)
@@ -122,7 +124,7 @@ class TestAlertService:
         assert "enabled-2" in names
         assert "disabled" not in names
 
-    def test_migrate_from_directory(self, temp_dir):
+    def test_migrate_from_directory(self, temp_dir: Path) -> None:
         """Test migrating alerts from directory to single file."""
         # Create old-style directory with YAML files
         alerts_dir = temp_dir / "alerts"
@@ -157,7 +159,7 @@ class TestAlertService:
         assert config.get_alert("alert1") is not None
         assert config.get_alert("alert2") is not None
 
-    def test_migrate_from_nonexistent_dir(self, temp_dir):
+    def test_migrate_from_nonexistent_dir(self, temp_dir: Path) -> None:
         """Test migration fails if source directory doesn't exist."""
         alerts_dir = temp_dir / "nonexistent"
         alerts_file = temp_dir / "alerts.yaml"
@@ -165,7 +167,7 @@ class TestAlertService:
         with pytest.raises(NotADirectoryError):
             AlertService.migrate_from_directory(alerts_dir, alerts_file)
 
-    def test_migrate_rejects_file_path(self, temp_dir):
+    def test_migrate_rejects_file_path(self, temp_dir: Path) -> None:
         """Test migration fails if source is a file, not a directory."""
         file_path = temp_dir / "not_a_dir"
         file_path.write_text("I am a file")
@@ -174,7 +176,7 @@ class TestAlertService:
         with pytest.raises(NotADirectoryError, match="not a directory"):
             AlertService.migrate_from_directory(file_path, alerts_file)
 
-    def test_migrate_to_existing_file(self, temp_dir):
+    def test_migrate_to_existing_file(self, temp_dir: Path) -> None:
         """Test migration fails if target file already exists."""
         alerts_dir = temp_dir / "alerts"
         alerts_dir.mkdir()
@@ -191,7 +193,9 @@ class TestJobService:
 
     @pytest.mark.asyncio
     @respx.mock
-    async def test_search_saves_to_db(self, test_settings, sample_html: str):
+    async def test_search_saves_to_db(
+        self, test_settings: Settings, sample_html: str
+    ) -> None:
         """Test that search results are saved to database."""
         # Return sample on first call, empty on second
         route = respx.get(LinkedInClient.BASE_URL)
@@ -211,7 +215,9 @@ class TestJobService:
 
     @pytest.mark.asyncio
     @respx.mock
-    async def test_search_skip_db(self, test_settings, sample_html: str):
+    async def test_search_skip_db(
+        self, test_settings: Settings, sample_html: str
+    ) -> None:
         """Test search without saving to database."""
         route = respx.get(LinkedInClient.BASE_URL)
         route.side_effect = [
@@ -227,7 +233,7 @@ class TestJobService:
         assert len(jobs) == 2
         assert service.get_job_count() == 0
 
-    def test_save_to_json(self, test_settings):
+    def test_save_to_json(self, test_settings: Settings) -> None:
         """Test saving jobs to JSON file."""
         service = JobService(test_settings)
 
@@ -249,7 +255,7 @@ class TestJobService:
 
     @pytest.mark.asyncio
     @respx.mock
-    async def test_run_alert(self, test_settings, sample_html: str):
+    async def test_run_alert(self, test_settings: Settings, sample_html: str) -> None:
         """Test running an alert."""
         # Mock returns sample_html on first call, empty on subsequent calls
         route = respx.get(LinkedInClient.BASE_URL)
@@ -271,7 +277,7 @@ class TestJobService:
 
     @pytest.mark.asyncio
     @respx.mock
-    async def test_run_disabled_alert(self, test_settings):
+    async def test_run_disabled_alert(self, test_settings: Settings) -> None:
         """Test that disabled alerts return empty list."""
         service = JobService(test_settings)
         alert = SavedAlert(
@@ -287,8 +293,8 @@ class TestJobService:
     @pytest.mark.asyncio
     @respx.mock
     async def test_run_alert_only_new_returns_new_jobs(
-        self, test_settings, sample_html: str
-    ):
+        self, test_settings: Settings, sample_html: str
+    ) -> None:
         """Test that run_alert with only_new=True returns only new jobs."""
         service = JobService(test_settings)
 
@@ -325,7 +331,7 @@ class TestJobService:
         # Both jobs should now be in DB (original + new)
         assert service.get_job_count() == 2
 
-    def test_get_stored_jobs(self, test_settings):
+    def test_get_stored_jobs(self, test_settings: Settings) -> None:
         """Test retrieving stored jobs."""
         service = JobService(test_settings)
 
